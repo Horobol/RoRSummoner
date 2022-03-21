@@ -1,0 +1,10 @@
+﻿{
+	"name": "SummonerSurvivorMod",
+	"version_number": "0.0.1",
+	"website_url": "",
+	"description": "Summoner Survivor",
+	"dependencies": [
+		"bbepis-BepInExPack-5.4.9",
+		"RiskofThunder-HookGenPatcher-1.2.1"
+	]
+}
