@@ -1,6 +1,7 @@
 ﻿{
 	"name": "SummonerSurvivorMod",
-	"version_number": "0.0.1",
+	"author": "Horobol + Honk",
+	"version_number": "0.0.3",
 	"website_url": "",
 	"description": "Summoner Survivor",
 	"dependencies": [

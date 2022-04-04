@@ -16,9 +16,9 @@ namespace SummonerSurvivor
         //The Plugin GUID should be a unique ID for this plugin, which is human readable (as it is used in places like the config).
         //If we see this PluginGUID as it is on thunderstore, we will deprecate this mod. Change the PluginAuthor and the PluginName !
         public const string PluginGUID = "com." + PluginAuthor + "." + PluginName;
-        public const string PluginAuthor = "Horobol";
+        public const string PluginAuthor = "Honkobol";
         public const string PluginName = "SummonerSurvivor";
-        public const string PluginVersion = "0.0.1";
+        public const string PluginVersion = "0.0.3";
 
         //We need our item definition to persist through our functions, and therefore make it a class field.
         private static SkillDef skillDefSummon;
@@ -34,7 +34,7 @@ namespace SummonerSurvivor
 
             skillDefSummon = ScriptableObject.CreateInstance<SkillDef>();
             skillDefSummon.activationState = new SerializableEntityStateType(typeof(Skills.Summoner.BeginSummon));
-            skillDefSummon.activationStateMachineName = "Weapon";
+            skillDefSummon.activationStateMachineName = "Body";
             skillDefSummon.baseMaxStock = 1;
             skillDefSummon.baseRechargeInterval = 0f;
             skillDefSummon.beginSkillCooldownOnSkillEnd = true;

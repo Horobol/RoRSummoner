@@ -7,15 +7,17 @@ namespace SummonerSurvivor.Skills.Summoner
     class BeginSummon : BaseSkillState
     {
 
-        private float blinkDuration = 0.3f;
+        private float blinkDuration = 0.3f; //The "distance" is predetermined from blinkVector, but this is the ""speed"" you blink at. The t in D*t=V
         private bool beginBlink = false;
-        private float basePrepDuration = 0.5f;
-        public float jumpCoefficient = 25f;
-        private float prepDuration;
+        private float basePrepDuration = 0f; //Divided by attack speed to be how fast you start blinking. Kinda null for this ability, methinks
+        public float jumpCoefficient = 2.5f; // SUPER FUNNY, only this modifies the distance you jump. Setting this to 1 doesn't move you at all -- regardless of blinkVector's size.
+        private float prepDuration; //Decided later on, see the comment by basePrepDuration
 
-        private Vector3 blinkVector = Vector3.zero; // Potentially fix
-
-        protected CameraTargetParams.AimRequest aimRequest;
+        //IMPORTANT: THIS IS IN RELATION TO THE CAMERA, NOT THE DIRECTION THE CHARACTER FACES
+        private Vector3 blinkVector = new Vector3(0, 0, 1f); // Literally don't touch it. Changing the first and second move you horizontally, and leave the third at 1f.
+        
+        public static GameObject blinkPrefab; //We'll need to make an effect for this to actually appear, BUT it exists and is refered to, so don't comment it out
+        protected CameraTargetParams.AimRequest aimRequest; //This is used in determining where to teleport to, and what "up" constitutes.
 
         private Transform modelTransform;
         private CharacterModel characterModel;
@@ -45,13 +47,19 @@ namespace SummonerSurvivor.Skills.Summoner
                 aimRequest = base.cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Aura);
             }
             Vector3 direction = GetAimRay().direction;
-            direction.y = 0f;
+            direction.y = 25f;
             direction.Normalize();
             Vector3 up = Vector3.up;
             worldBlinkVector = Matrix4x4.TRS(base.transform.position, Util.QuaternionSafeLookRotation(direction, up), new Vector3(1f, 1f, 1f)).MultiplyPoint3x4(blinkVector) - base.transform.position;
             worldBlinkVector.Normalize();
         }
-
+        private void CreateBlinkEffect(Vector3 origin)
+        {
+            EffectData effectData = new EffectData();
+            effectData.rotation = Util.QuaternionSafeLookRotation(worldBlinkVector);
+            effectData.origin = origin;
+            EffectManager.SpawnEffect(blinkPrefab, effectData, transmit: false);
+        }
         public override void FixedUpdate()
         {
             base.FixedUpdate();
@@ -79,16 +87,7 @@ namespace SummonerSurvivor.Skills.Summoner
                 outer.SetNextState(InstantiateNextState());
             }
         }
-
-        private void CreateBlinkEffect(Vector3 origin)
-        {
-            EffectData effectData = new EffectData();
-            effectData.rotation = Util.QuaternionSafeLookRotation(worldBlinkVector);
-            effectData.origin = origin;
-            //EffectManager.SpawnEffect(blinkPrefab, effectData, transmit: false);
-        }
-
-        public override void OnExit()
+        public override void OnExit() //Purely the post-blink sfx, nothing particular to do with fixing the jump -Honk
         {
             CreateBlinkEffect(base.transform.position);
             modelTransform = GetModelTransform();
@@ -109,11 +108,11 @@ namespace SummonerSurvivor.Skills.Summoner
                 temporaryOverlay2.originalMaterial = LegacyResourcesAPI.Load<Material>("Materials/matHuntressFlashExpanded");
                 temporaryOverlay2.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
             }
-            if (characterModel)
+            if ((bool)characterModel)
             {
                 characterModel.invisibilityCount--;
             }
-            if (hurtboxGroup)
+            if ((bool)hurtboxGroup)
             {
                 hurtboxGroup.hurtBoxesDeactivatorCounter--;
             }
