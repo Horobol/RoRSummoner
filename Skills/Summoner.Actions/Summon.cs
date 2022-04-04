@@ -1,10 +1,9 @@
-﻿using BepInEx;
-using R2API;
-using R2API.Utils;
+﻿using R2API.Utils;
 using EntityStates;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
+using SummonerSurvivor.Skills.Summoner.Actions;
 
 namespace SummonerSurvivor.Skills.Summoner
 {
@@ -36,7 +35,7 @@ namespace SummonerSurvivor.Skills.Summoner
         public static GameObject areaIndicatorPrefab;
         private GameObject areaIndicatorInstance; //Same deal as the blink prefab in BeginSummon, invisible in gameplay but exists
 
-        public static float maxPlacementDistance;
+        public static float maxPlacementDistance = 1000f; // Using huntress value, though it seems to be way further than we need.
         public static float normalYThreshold;
 
         private SummonBlueprintController summonBlueprints;
@@ -140,8 +139,8 @@ namespace SummonerSurvivor.Skills.Summoner
                 if ((base.inputBank.skill1.down || base.inputBank.skill4.justPressed && currentPlacementInfo.ok))
                 {
                     ChatMessage.SendColored("Summoned!", "#88cc99");
-                    // i have no clue how to do the method tbh SpawnCard("SpawnCards/CharacterSpawnCards/cscGolem", currentPlacementInfo.position, currentPlacementInfo.rotation);
-                    DestroySummonIndicator();
+                    // Use Elder Lemurian for now
+                    SpawnFriendlyMonster(Monsters.LemurianBruiser, currentPlacementInfo.position);
                     exitPending = true;
                 }
                 if (base.inputBank.skill2.justPressed)
@@ -168,6 +167,43 @@ namespace SummonerSurvivor.Skills.Summoner
         public override InterruptPriority GetMinimumInterruptPriority()
         {
             return InterruptPriority.PrioritySkill;
+        }
+
+        private void SpawnFriendlyMonster(string monster, Vector3 position)
+        {
+            DirectorPlacementRule placementRule = new DirectorPlacementRule
+            {
+                placementMode = DirectorPlacementRule.PlacementMode.Direct,
+                position = position
+            };
+
+            SpawnCard card = LegacyResourcesAPI.Load<SpawnCard>(monster);
+            card.directorCreditCost = 0;
+            SpawnFinalizer finalizer = new SpawnFinalizer()
+            {
+                CombatSquad = null, //TODO: Add a global CombatGroup per Summoner for summon management
+                EliteIndex = EliteIndex.None,
+                summonerCharacterBody = base.characterBody
+            };
+
+            DirectorSpawnRequest request = new DirectorSpawnRequest(card, placementRule, RoR2Application.rng)
+            {
+                ignoreTeamMemberLimit = true,
+                teamIndexOverride = TeamIndex.Player,
+                onSpawnedServer = finalizer.OnCardSpawned,
+                summonerBodyObject = base.gameObject
+            };
+
+            GameObject obj = DirectorCore.instance.TrySpawnObject(request);
+
+            if (!obj)
+            {
+                // Fallback if monster is not summonable in given position?
+                Debug.LogError("Couldn't spawn any monster!");
+            } else
+            {
+
+            }
         }
     }
 
