@@ -1,11 +1,11 @@
 ﻿using RoR2;
+using SummonerSurvivor.Modules;
 using UnityEngine;
 
 namespace SummonerSurvivor.Skills.Summoner.Actions
 {
     class SpawnFinalizer
     {
-        public CombatSquad CombatSquad { get; set; }
 
         public EliteIndex EliteIndex { get; set; }
 
@@ -19,10 +19,8 @@ namespace SummonerSurvivor.Skills.Summoner.Actions
             }
 
             CharacterMaster monster = spawnResult.spawnedInstance.GetComponent<CharacterMaster>();
-            if (CombatSquad)
-            {
-                CombatSquad.AddMember(monster);
-            }
+            //TODO: FIX ASAP
+            summonerCharacterBody.master.gameObject.GetComponent<SummonerManager>().summonerCombatSquad.AddMember(monster);
             EliteDef eliteDef = EliteCatalog.GetEliteDef(EliteIndex);
             EquipmentIndex equipmentIndex = (eliteDef != null) ? eliteDef.eliteEquipmentDef.equipmentIndex : EquipmentIndex.None;
             if (equipmentIndex != EquipmentIndex.None)

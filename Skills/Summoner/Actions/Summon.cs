@@ -38,6 +38,10 @@ namespace SummonerSurvivor.Skills.Summoner
         public static float maxPlacementDistance = 1000f; // Using huntress value, though it seems to be way further than we need.
         public static float normalYThreshold;
 
+        public static float summonExplosionRadius = 25f;
+        public static float summonExplosionForce = 10f;
+        public static float summonExplosionBaseDamage = 100f;
+
         private SummonBlueprintController summonBlueprints;
 
         private bool exitPending;
@@ -141,6 +145,7 @@ namespace SummonerSurvivor.Skills.Summoner
                     ChatMessage.SendColored("Summoned!", "#88cc99");
                     // Use Elder Lemurian for now
                     SpawnFriendlyMonster(Monsters.LemurianBruiser, currentPlacementInfo.position);
+                    SpawnSummonExplosion(currentPlacementInfo.position);
                     exitPending = true;
                 }
                 if (base.inputBank.skill2.justPressed)
@@ -159,14 +164,35 @@ namespace SummonerSurvivor.Skills.Summoner
             //base.skillLocator.primary = originalPrimarySkill; // Resets the primary to its original skill
             DestroySummonIndicator();
 
-
-            ChatMessage.SendColored("Properly Exited the Summonstate", "#ffffff");
-
-            
+            ChatMessage.SendColored("Properly Exited the Summonstate", "#ffffff"); 
         }
+
         public override InterruptPriority GetMinimumInterruptPriority()
         {
             return InterruptPriority.PrioritySkill;
+        }
+
+        private void SpawnSummonExplosion(Vector3 position)
+        {
+            //TODO: Change this prefab later to fit character
+            EffectManager.SpawnEffect(LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/VagrantDeathExplosion"), new EffectData
+            {
+                origin = position,
+                scale = summonExplosionRadius,
+                rotation = Quaternion.identity
+            }, transmit: true);
+            BlastAttack summonExplosion = new BlastAttack();
+            summonExplosion.attacker = base.gameObject;
+            summonExplosion.damageColorIndex = DamageColorIndex.Item;
+            summonExplosion.baseDamage = summonExplosionBaseDamage; // Scale with items/levels?
+            summonExplosion.radius = summonExplosionRadius;
+            summonExplosion.falloffModel = BlastAttack.FalloffModel.None;
+            summonExplosion.teamIndex = TeamIndex.Player;
+            summonExplosion.damageType = DamageType.AOE;
+            summonExplosion.position = position;
+            summonExplosion.baseForce = summonExplosionForce;
+            summonExplosion.attackerFiltering = AttackerFiltering.NeverHitSelf;
+            summonExplosion.Fire();
         }
 
         private void SpawnFriendlyMonster(string monster, Vector3 position)
@@ -181,7 +207,6 @@ namespace SummonerSurvivor.Skills.Summoner
             card.directorCreditCost = 0;
             SpawnFinalizer finalizer = new SpawnFinalizer()
             {
-                CombatSquad = null, //TODO: Add a global CombatGroup per Summoner for summon management
                 EliteIndex = EliteIndex.None,
                 summonerCharacterBody = base.characterBody
             };
@@ -202,7 +227,6 @@ namespace SummonerSurvivor.Skills.Summoner
                 Debug.LogError("Couldn't spawn any monster!");
             } else
             {
-
             }
         }
     }

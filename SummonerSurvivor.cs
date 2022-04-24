@@ -5,6 +5,8 @@ using EntityStates;
 using RoR2.Skills;
 using UnityEngine;
 using System;
+using SummonerSurvivor.Modules;
+using RoR2;
 
 namespace SummonerSurvivor
 {
@@ -66,6 +68,18 @@ namespace SummonerSurvivor
                 unlockableName = "",
                 viewableNode = new RoR2.ViewablesCatalog.Node(skillDefSummon.skillNameToken, false, null)
 
+            };
+
+            //TODO: FIX THIS ASAP, this should be a part of the character prefab we make later
+            On.RoR2.Run.BeginStage += (orig, self) =>
+            {
+                orig(self);
+                var instances = PlayerCharacterMasterController.instances;
+                foreach (PlayerCharacterMasterController playerCharacterMaster in instances)
+                {
+                    Log.LogInfo("Adding manager to player");
+                    playerCharacterMaster.master.gameObject.AddComponent<SummonerManager>();
+                }
             };
 
             // This line of log will appear in the bepinex console when the Awake method is done.
